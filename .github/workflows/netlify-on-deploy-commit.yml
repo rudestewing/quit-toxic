@@ -1,0 +1,21 @@
+name: Netlify Deploy on Commit Message
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest commit message
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+          if [[ "$COMMIT_MSG" == deploy:* ]]; then
+            echo "Triggering Netlify build..."
+            curl -X POST -d '{}' https://api.netlify.com/build_hooks/YOUR_BUILD_HOOK_URL
+          else
+            echo "No deploy keyword found. Skipping Netlify deploy."
+          fi
