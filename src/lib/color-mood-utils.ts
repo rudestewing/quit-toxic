@@ -1,4 +1,4 @@
-import { ColorMood, colorMoods, isDarkMood } from "@/lib/colors";
+import { colorMoods, isDarkMood, type ColorMood } from "@/lib/colors";
 
 /**
  * Color Mood Utilities

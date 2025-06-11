@@ -13,7 +13,7 @@ function QuitTrackerApp() {
 
   // Update current time every second for live countdown
   useEffect(() => {
-    let timer: number | null = null;
+    let timer = null;
     if (items.length > 0) {
       timer = setInterval(() => {
         updateCurrentTime();
