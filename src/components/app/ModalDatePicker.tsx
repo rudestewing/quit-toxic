@@ -1,7 +1,7 @@
 "use client";
 
 import dayjs from "dayjs";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -300,67 +300,82 @@ export default function ModalDatePicker({
     }
     return true;
   }); // Adjust selected values if they become invalid due to date restrictions
+  const validateDateTime = useCallback(
+    (dateTime: dayjs.Dayjs) => {
+      let newDateTime = dateTime;
+
+      // Get current values
+      const currentYear = dateTime.year();
+      const currentMonth = dateTime.month();
+      const currentDay = dateTime.date();
+      const currentHour = dateTime.hour();
+      const currentMinute = dateTime.minute();
+
+      // Adjust year if it's beyond max year
+      if (currentYear > maxYear) {
+        newDateTime = newDateTime.year(maxYear);
+      }
+
+      // Adjust month if it's beyond max month for max year
+      if (newDateTime.year() === maxYear && currentMonth > maxMonth) {
+        newDateTime = newDateTime.month(maxMonth);
+      }
+
+      // Adjust day if it's invalid for the selected month or beyond max day
+      const maxDayForMonth =
+        newDateTime.year() === maxYear && newDateTime.month() === maxMonth
+          ? Math.min(newDateTime.daysInMonth(), maxDay)
+          : newDateTime.daysInMonth();
+
+      if (currentDay > maxDayForMonth) {
+        newDateTime = newDateTime.date(maxDayForMonth);
+      }
+
+      // Adjust hour if it's beyond max hour for current date
+      if (
+        newDateTime.year() === maxYear &&
+        newDateTime.month() === maxMonth &&
+        newDateTime.date() === maxDay &&
+        currentHour > maxHour
+      ) {
+        newDateTime = newDateTime.hour(maxHour);
+      }
+
+      // Adjust minute if it's beyond max minute for current date and hour
+      if (
+        newDateTime.year() === maxYear &&
+        newDateTime.month() === maxMonth &&
+        newDateTime.date() === maxDay &&
+        newDateTime.hour() === maxHour &&
+        currentMinute > maxMinute
+      ) {
+        newDateTime = newDateTime.minute(maxMinute);
+      }
+
+      return newDateTime;
+    },
+    [maxYear, maxMonth, maxDay, maxHour, maxMinute]
+  );
+
+  // Use ref to track if we're in a validation update to prevent loops
+  const isValidatingRef = useRef(false);
+
   useEffect(() => {
-    let newDateTime = selectedDateTime;
-
-    // Adjust year if it's beyond max year
-    if (selectedYear > maxYear) {
-      newDateTime = newDateTime.year(maxYear);
+    // Skip validation if we're already in a validation update
+    if (isValidatingRef.current) {
+      isValidatingRef.current = false;
+      return;
     }
 
-    // Adjust month if it's beyond max month for max year
-    if (newDateTime.year() === maxYear && selectedMonth > maxMonth) {
-      newDateTime = newDateTime.month(maxMonth);
-    }
-
-    // Adjust day if it's invalid for the selected month or beyond max day
-    const maxDayForMonth =
-      newDateTime.year() === maxYear && newDateTime.month() === maxMonth
-        ? Math.min(newDateTime.daysInMonth(), maxDay)
-        : newDateTime.daysInMonth();
-
-    if (selectedDay > maxDayForMonth) {
-      newDateTime = newDateTime.date(maxDayForMonth);
-    }
-
-    // Adjust hour if it's beyond max hour for current date
-    if (
-      newDateTime.year() === maxYear &&
-      newDateTime.month() === maxMonth &&
-      newDateTime.date() === maxDay &&
-      selectedHour > maxHour
-    ) {
-      newDateTime = newDateTime.hour(maxHour);
-    }
-
-    // Adjust minute if it's beyond max minute for current date and hour
-    if (
-      newDateTime.year() === maxYear &&
-      newDateTime.month() === maxMonth &&
-      newDateTime.date() === maxDay &&
-      newDateTime.hour() === maxHour &&
-      selectedMinute > maxMinute
-    ) {
-      newDateTime = newDateTime.minute(maxMinute);
-    }
+    const validatedDateTime = validateDateTime(selectedDateTime);
 
     // Only update if there was a change
-    if (!newDateTime.isSame(selectedDateTime)) {
-      setSelectedDateTime(newDateTime);
+    if (!validatedDateTime.isSame(selectedDateTime)) {
+      isValidatingRef.current = true;
+      setSelectedDateTime(validatedDateTime);
     }
-  }, [
-    selectedDateTime,
-    selectedMonth,
-    selectedYear,
-    selectedDay,
-    selectedHour,
-    selectedMinute,
-    maxYear,
-    maxMonth,
-    maxDay,
-    maxHour,
-    maxMinute,
-  ]);
+  }, [selectedDateTime, validateDateTime]);
+
   const handleConfirm = () => {
     const finalDateTime = includeTime
       ? selectedDateTime
@@ -370,8 +385,27 @@ export default function ModalDatePicker({
     onSelect(finalDateTime.format("YYYY-MM-DDTHH:mm"));
     onClose();
   };
-
   const selectedDateDisplay = selectedDateTime;
+
+  // Initialize calendarValue with the selectedDateTime
+  const [calendarValue, setCalendarValue] = useState<Date | undefined>(
+    new Date(
+      selectedDateTime.year(),
+      selectedDateTime.month(),
+      selectedDateTime.date()
+    )
+  );
+
+  // Sync calendarValue when selectedDateTime changes
+  useEffect(() => {
+    setCalendarValue(
+      new Date(
+        selectedDateTime.year(),
+        selectedDateTime.month(),
+        selectedDateTime.date()
+      )
+    );
+  }, [selectedDateTime]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -394,7 +428,6 @@ export default function ModalDatePicker({
                 includeTime ? "grid-cols-5" : "grid-cols-3"
               } justify-items-center`}
             >
-              {/* Month Wheel */}
               <div className="flex flex-col items-center">
                 <label className="text-primary font-semibold mb-2 text-xs uppercase tracking-wider">
                   Month
@@ -409,7 +442,6 @@ export default function ModalDatePicker({
                 />
               </div>
 
-              {/* Day Wheel */}
               <div className="flex flex-col items-center">
                 <label className="text-primary font-semibold mb-2 text-xs uppercase tracking-wider">
                   Day
@@ -424,7 +456,6 @@ export default function ModalDatePicker({
                 />
               </div>
 
-              {/* Year Wheel */}
               <div className="flex flex-col items-center">
                 <label className="text-primary font-semibold mb-2 text-xs uppercase tracking-wider">
                   Year
@@ -439,10 +470,8 @@ export default function ModalDatePicker({
                 />
               </div>
 
-              {/* Time Wheels */}
               {includeTime && (
                 <>
-                  {/* Hour Wheel */}
                   <div className="flex flex-col items-center">
                     <label className="text-primary font-semibold mb-2 text-xs uppercase tracking-wider">
                       Hour
@@ -457,7 +486,6 @@ export default function ModalDatePicker({
                     />
                   </div>
 
-                  {/* Minute Wheel */}
                   <div className="flex flex-col items-center">
                     <label className="text-primary font-semibold mb-2 text-xs uppercase tracking-wider">
                       Min
@@ -479,27 +507,26 @@ export default function ModalDatePicker({
             <div className="flex flex-col gap-2 items-center">
               <Calendar
                 mode="single"
-                // selected={
-                //   new Date(
-                //     selectedDateDisplay.year(),
-                //     selectedDateDisplay.month(),
-                //     selectedDateDisplay.date()
-                //   )
-                // }
+                selected={calendarValue}
                 onSelect={(selected) => {
-                  console.log("selected", selected);
                   if (selected) {
                     const newDate = dayjs(selected);
-                    setSelectedDateTime((prev) =>
-                      prev
-                        .year(newDate.year())
-                        .month(newDate.month())
-                        .date(newDate.date())
-                    );
+                    // Preserve the time from current selectedDateTime
+                    const updatedDateTime = selectedDateTime
+                      .year(newDate.year())
+                      .month(newDate.month())
+                      .date(newDate.date());
+
+                    setSelectedDateTime(updatedDateTime);
+                    setCalendarValue(selected);
                   }
                 }}
                 className="rounded-md border shadow-sm"
                 captionLayout="dropdown"
+                disabled={(date) => {
+                  // Disable future dates (only allow past and today)
+                  return dayjs(date).isAfter(dayjs(), "day");
+                }}
               />
               <div className="flex flex-col gap-3">
                 <Input
