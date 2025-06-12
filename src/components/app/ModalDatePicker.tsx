@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Check, X, Clock } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "../ui/input";
 
 interface Props {
   isOpen: boolean;
@@ -199,6 +200,7 @@ export default function ModalDatePicker({
 }: Props) {
   // Parse initial date or use current date
   const initDate = initialDate ? dayjs(initialDate) : dayjs();
+
   const [selectedMonth, setSelectedMonth] = useState(initDate.month());
   const [selectedDay, setSelectedDay] = useState(initDate.date());
   const [selectedYear, setSelectedYear] = useState(initDate.year());
@@ -455,7 +457,7 @@ export default function ModalDatePicker({
             </div>
           </div>
           <div className="hidden md:block">
-            <div className="">
+            <div className="flex flex-col gap-2 items-center">
               <Calendar
                 mode="single"
                 selected={
@@ -470,6 +472,18 @@ export default function ModalDatePicker({
                 className="rounded-md border shadow-sm"
                 captionLayout="dropdown"
               />
+              <div className="flex flex-col gap-3">
+                <Input
+                  type="time"
+                  id="time"
+                  step="1"
+                  defaultValue={selectedDateDisplay.format("HH:mm")}
+                  className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                  }}
+                />
+              </div>
             </div>
           </div>
           {/* Selected Date Display */}
