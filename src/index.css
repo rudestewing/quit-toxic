@@ -115,3 +115,38 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
 }
+
+/* Enhanced mobile touch scrolling for date picker */
+.touch-scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+.touch-scroll-item {
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/* Prevent text selection and improve touch performance */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scroll wheel width stability */
+.scroll-wheel-container {
+  contain: layout style;
+  will-change: scroll-position;
+}
+
+.scroll-wheel-item {
+  contain: layout style;
+  flex-shrink: 0;
+  flex-grow: 0;
+}

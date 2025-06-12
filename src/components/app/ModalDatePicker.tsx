@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Check, X, Clock } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "../ui/input";
+import ScrollWheel from "./ScrollWheel";
 
 interface Props {
   isOpen: boolean;
@@ -23,170 +24,6 @@ interface Props {
   title?: string;
   description?: string;
   includeTime?: boolean;
-}
-
-interface ScrollWheelProps {
-  options: Array<{ value: number; label: string }>;
-  value: number;
-  onChange: (value: number) => void;
-  itemHeight?: number;
-}
-
-function ScrollWheel({
-  options,
-  value,
-  onChange,
-  itemHeight = 50,
-}: ScrollWheelProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isUserScrollingRef = useRef(false);
-  const visibleItems = 5; // Fixed to show exactly 5 items
-  const paddingItems = 2; // 2 items above and below the center item
-
-  // Create extended options array with padding
-  const extendedOptions = [
-    ...Array(paddingItems)
-      .fill(null)
-      .map(() => ({ value: -1, label: "" })),
-    ...options,
-    ...Array(paddingItems)
-      .fill(null)
-      .map(() => ({ value: -1, label: "" })),
-  ];
-
-  const scrollToValue = (targetValue: number, smooth = false) => {
-    const index = options.findIndex((option) => option.value === targetValue);
-    if (index !== -1 && containerRef.current) {
-      const scrollTop = index * itemHeight;
-      if (smooth) {
-        containerRef.current.scrollTo({
-          top: scrollTop,
-          behavior: "smooth",
-        });
-      } else {
-        containerRef.current.scrollTop = scrollTop;
-      }
-    }
-  };
-
-  const handleScroll = () => {
-    if (!containerRef.current || !isUserScrollingRef.current) return;
-
-    const scrollTop = containerRef.current.scrollTop;
-    const index = Math.round(scrollTop / itemHeight);
-    const option = options[index];
-
-    if (option && option.value !== value && option.value !== -1) {
-      onChange(option.value);
-    }
-  };
-
-  const snapToNearestItem = () => {
-    if (!containerRef.current) return;
-
-    const scrollTop = containerRef.current.scrollTop;
-    const index = Math.round(scrollTop / itemHeight);
-    const snapScrollTop = index * itemHeight;
-
-    // Snap to the nearest item
-    containerRef.current.scrollTo({
-      top: snapScrollTop,
-      behavior: "smooth",
-    });
-
-    // Update the selected value
-    const option = options[index];
-    if (option && option.value !== value && option.value !== -1) {
-      onChange(option.value);
-    }
-  };
-
-  const handleInteractionStart = () => {
-    isUserScrollingRef.current = true;
-  };
-
-  const handleInteractionEnd = () => {
-    if (isUserScrollingRef.current) {
-      snapToNearestItem();
-      isUserScrollingRef.current = false;
-    }
-  };
-
-  useEffect(() => {
-    scrollToValue(value);
-  }, [value]);
-
-  // Setup event listeners for touch and mouse events
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    container.addEventListener("touchstart", handleInteractionStart, {
-      passive: true,
-    });
-    container.addEventListener("touchend", handleInteractionEnd, {
-      passive: true,
-    });
-    container.addEventListener("mousedown", handleInteractionStart);
-    container.addEventListener("mouseup", handleInteractionEnd);
-    container.addEventListener("mouseleave", handleInteractionEnd);
-
-    return () => {
-      container.removeEventListener("touchstart", handleInteractionStart);
-      container.removeEventListener("touchend", handleInteractionEnd);
-      container.removeEventListener("mousedown", handleInteractionStart);
-      container.removeEventListener("mouseup", handleInteractionEnd);
-      container.removeEventListener("mouseleave", handleInteractionEnd);
-    };
-  }, []);
-  return (
-    <div className="relative">
-      {/* Background */}
-      <div className="absolute inset-0 p-1">
-        <div className="w-full h-full bg-card/50 rounded-lg border border-border/20"></div>
-      </div>
-      {/* Selection highlight - positioned at the center (3rd item, index 2) */}
-      <div
-        className="absolute left-1 right-1 bg-primary/15 border-2 border-primary/40 rounded-lg z-10 shadow-inner"
-        style={{
-          top: `${Math.floor(visibleItems / 2) * itemHeight + 1}px`, // Center item
-          height: `${itemHeight}px`,
-        }}
-      />
-      {/* Scroll container - fixed height for exactly 5 items */}
-      <div
-        ref={containerRef}
-        className="relative z-20 overflow-y-scroll scrollbar-hide"
-        style={{ height: `${visibleItems * itemHeight}px` }} // Exactly 5 items visible
-        onScroll={handleScroll}
-      >
-        {extendedOptions.map((option, index) => (
-          <div
-            key={`${option.value}-${index}`}
-            className={`px-6 flex items-center justify-center font-bold transition-all duration-300 cursor-pointer select-none ${
-              option.value === -1
-                ? "opacity-0 pointer-events-none"
-                : "opacity-50 hover:opacity-80"
-            } ${
-              option.value === value
-                ? "text-primary text-xl font-extrabold scale-110 drop-shadow-md"
-                : "text-muted-foreground text-lg"
-            }`}
-            style={{ height: `${itemHeight}px` }}
-            onClick={() => {
-              if (option.value !== -1) {
-                isUserScrollingRef.current = false;
-                onChange(option.value);
-                scrollToValue(option.value, true);
-              }
-            }}
-          >
-            {option.label}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export default function ModalDatePicker({
@@ -430,20 +267,6 @@ export default function ModalDatePicker({
             >
               <div className="flex flex-col items-center">
                 <label className="text-primary font-semibold mb-2 text-xs uppercase tracking-wider">
-                  Month
-                </label>
-                <ScrollWheel
-                  options={monthOptions}
-                  value={selectedMonth}
-                  onChange={(month) =>
-                    setSelectedDateTime((prev) => prev.month(month))
-                  }
-                  itemHeight={50}
-                />
-              </div>
-
-              <div className="flex flex-col items-center">
-                <label className="text-primary font-semibold mb-2 text-xs uppercase tracking-wider">
                   Day
                 </label>
                 <ScrollWheel
@@ -451,6 +274,19 @@ export default function ModalDatePicker({
                   value={selectedDay}
                   onChange={(day) =>
                     setSelectedDateTime((prev) => prev.date(day))
+                  }
+                  itemHeight={50}
+                />
+              </div>
+              <div className="flex flex-col items-center">
+                <label className="text-primary font-semibold mb-2 text-xs uppercase tracking-wider">
+                  Month
+                </label>
+                <ScrollWheel
+                  options={monthOptions}
+                  value={selectedMonth}
+                  onChange={(month) =>
+                    setSelectedDateTime((prev) => prev.month(month))
                   }
                   itemHeight={50}
                 />
