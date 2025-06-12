@@ -1,7 +1,7 @@
 "use client";
 
 import dayjs from "dayjs";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -144,7 +144,7 @@ function ScrollWheel({
       {/* Background */}
       <div className="absolute inset-0 p-1">
         <div className="w-full h-full bg-card/50 rounded-lg border border-border/20"></div>
-      </div>{" "}
+      </div>
       {/* Selection highlight - positioned at the center (3rd item, index 2) */}
       <div
         className="absolute left-1 right-1 bg-primary/15 border-2 border-primary/40 rounded-lg z-10 shadow-inner"
@@ -201,11 +201,30 @@ export default function ModalDatePicker({
   // Parse initial date or use current date
   const initDate = initialDate ? dayjs(initialDate) : dayjs();
 
-  const [selectedMonth, setSelectedMonth] = useState(initDate.month());
-  const [selectedDay, setSelectedDay] = useState(initDate.date());
-  const [selectedYear, setSelectedYear] = useState(initDate.year());
-  const [selectedHour, setSelectedHour] = useState(initDate.hour());
-  const [selectedMinute, setSelectedMinute] = useState(initDate.minute());
+  // Single state for selected date/time
+  const [selectedDateTime, setSelectedDateTime] = useState(initDate);
+
+  // Derived values using useMemo
+  const selectedMonth = useMemo(
+    () => selectedDateTime.month(),
+    [selectedDateTime]
+  );
+  const selectedDay = useMemo(
+    () => selectedDateTime.date(),
+    [selectedDateTime]
+  );
+  const selectedYear = useMemo(
+    () => selectedDateTime.year(),
+    [selectedDateTime]
+  );
+  const selectedHour = useMemo(
+    () => selectedDateTime.hour(),
+    [selectedDateTime]
+  );
+  const selectedMinute = useMemo(
+    () => selectedDateTime.minute(),
+    [selectedDateTime]
+  );
 
   // Calculate maximum allowed date (current date - no future dates allowed)
   const maxDate = dayjs();
@@ -234,12 +253,11 @@ export default function ModalDatePicker({
       return option.value <= maxMonth;
     }
     return true;
-  });
-  // Get days in selected month/year
-  const daysInMonth = dayjs()
-    .year(selectedYear)
-    .month(selectedMonth)
-    .daysInMonth();
+  }); // Get days in selected month/year
+  const daysInMonth = useMemo(
+    () => selectedDateTime.daysInMonth(),
+    [selectedDateTime]
+  );
 
   // Generate day options (filter if selected year/month is max year/month)
   const dayOptions = Array.from({ length: daysInMonth }, (_, i) => ({
@@ -281,57 +299,59 @@ export default function ModalDatePicker({
       return option.value <= maxMinute;
     }
     return true;
-  });
-  // Adjust selected values if they become invalid due to date restrictions
+  }); // Adjust selected values if they become invalid due to date restrictions
   useEffect(() => {
+    let newDateTime = selectedDateTime;
+
     // Adjust year if it's beyond max year
     if (selectedYear > maxYear) {
-      setSelectedYear(maxYear);
-      return;
+      newDateTime = newDateTime.year(maxYear);
     }
 
     // Adjust month if it's beyond max month for max year
-    if (selectedYear === maxYear && selectedMonth > maxMonth) {
-      setSelectedMonth(maxMonth);
-      return;
+    if (newDateTime.year() === maxYear && selectedMonth > maxMonth) {
+      newDateTime = newDateTime.month(maxMonth);
     }
 
     // Adjust day if it's invalid for the selected month or beyond max day
     const maxDayForMonth =
-      selectedYear === maxYear && selectedMonth === maxMonth
-        ? Math.min(daysInMonth, maxDay)
-        : daysInMonth;
+      newDateTime.year() === maxYear && newDateTime.month() === maxMonth
+        ? Math.min(newDateTime.daysInMonth(), maxDay)
+        : newDateTime.daysInMonth();
 
     if (selectedDay > maxDayForMonth) {
-      setSelectedDay(maxDayForMonth);
-      return;
+      newDateTime = newDateTime.date(maxDayForMonth);
     }
 
     // Adjust hour if it's beyond max hour for current date
     if (
-      selectedYear === maxYear &&
-      selectedMonth === maxMonth &&
-      selectedDay === maxDay &&
+      newDateTime.year() === maxYear &&
+      newDateTime.month() === maxMonth &&
+      newDateTime.date() === maxDay &&
       selectedHour > maxHour
     ) {
-      setSelectedHour(maxHour);
-      return;
+      newDateTime = newDateTime.hour(maxHour);
     }
 
     // Adjust minute if it's beyond max minute for current date and hour
     if (
-      selectedYear === maxYear &&
-      selectedMonth === maxMonth &&
-      selectedDay === maxDay &&
-      selectedHour === maxHour &&
+      newDateTime.year() === maxYear &&
+      newDateTime.month() === maxMonth &&
+      newDateTime.date() === maxDay &&
+      newDateTime.hour() === maxHour &&
       selectedMinute > maxMinute
     ) {
-      setSelectedMinute(maxMinute);
+      newDateTime = newDateTime.minute(maxMinute);
+    }
+
+    // Only update if there was a change
+    if (!newDateTime.isSame(selectedDateTime)) {
+      setSelectedDateTime(newDateTime);
     }
   }, [
+    selectedDateTime,
     selectedMonth,
     selectedYear,
-    daysInMonth,
     selectedDay,
     selectedHour,
     selectedMinute,
@@ -341,28 +361,17 @@ export default function ModalDatePicker({
     maxHour,
     maxMinute,
   ]);
-
   const handleConfirm = () => {
-    const selectedDate = dayjs()
-      .year(selectedYear)
-      .month(selectedMonth)
-      .date(selectedDay)
-      .hour(includeTime ? selectedHour : 0)
-      .minute(includeTime ? selectedMinute : 0)
-      .second(0)
-      .millisecond(0);
+    const finalDateTime = includeTime
+      ? selectedDateTime
+      : selectedDateTime.hour(0).minute(0).second(0).millisecond(0);
 
     // Return in the format expected by the form (YYYY-MM-DDTHH:mm)
-    onSelect(selectedDate.format("YYYY-MM-DDTHH:mm"));
+    onSelect(finalDateTime.format("YYYY-MM-DDTHH:mm"));
     onClose();
   };
 
-  const selectedDateDisplay = dayjs()
-    .year(selectedYear)
-    .month(selectedMonth)
-    .date(selectedDay)
-    .hour(selectedHour)
-    .minute(selectedMinute);
+  const selectedDateDisplay = selectedDateTime;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -393,7 +402,9 @@ export default function ModalDatePicker({
                 <ScrollWheel
                   options={monthOptions}
                   value={selectedMonth}
-                  onChange={setSelectedMonth}
+                  onChange={(month) =>
+                    setSelectedDateTime((prev) => prev.month(month))
+                  }
                   itemHeight={50}
                 />
               </div>
@@ -406,7 +417,9 @@ export default function ModalDatePicker({
                 <ScrollWheel
                   options={dayOptions}
                   value={selectedDay}
-                  onChange={setSelectedDay}
+                  onChange={(day) =>
+                    setSelectedDateTime((prev) => prev.date(day))
+                  }
                   itemHeight={50}
                 />
               </div>
@@ -419,7 +432,9 @@ export default function ModalDatePicker({
                 <ScrollWheel
                   options={yearOptions}
                   value={selectedYear}
-                  onChange={setSelectedYear}
+                  onChange={(year) =>
+                    setSelectedDateTime((prev) => prev.year(year))
+                  }
                   itemHeight={50}
                 />
               </div>
@@ -435,7 +450,9 @@ export default function ModalDatePicker({
                     <ScrollWheel
                       options={hourOptions}
                       value={selectedHour}
-                      onChange={setSelectedHour}
+                      onChange={(hour) =>
+                        setSelectedDateTime((prev) => prev.hour(hour))
+                      }
                       itemHeight={50}
                     />
                   </div>
@@ -448,7 +465,9 @@ export default function ModalDatePicker({
                     <ScrollWheel
                       options={minuteOptions}
                       value={selectedMinute}
-                      onChange={setSelectedMinute}
+                      onChange={(minute) =>
+                        setSelectedDateTime((prev) => prev.minute(minute))
+                      }
                       itemHeight={50}
                     />
                   </div>
@@ -460,14 +479,24 @@ export default function ModalDatePicker({
             <div className="flex flex-col gap-2 items-center">
               <Calendar
                 mode="single"
-                selected={
-                  selectedDateDisplay
-                    ? new Date(selectedDateDisplay.toISOString())
-                    : undefined
-                }
+                // selected={
+                //   new Date(
+                //     selectedDateDisplay.year(),
+                //     selectedDateDisplay.month(),
+                //     selectedDateDisplay.date()
+                //   )
+                // }
                 onSelect={(selected) => {
-                  const val = dayjs(selected);
-                  console.log({ val });
+                  console.log("selected", selected);
+                  if (selected) {
+                    const newDate = dayjs(selected);
+                    setSelectedDateTime((prev) =>
+                      prev
+                        .year(newDate.year())
+                        .month(newDate.month())
+                        .date(newDate.date())
+                    );
+                  }
                 }}
                 className="rounded-md border shadow-sm"
                 captionLayout="dropdown"
@@ -477,10 +506,15 @@ export default function ModalDatePicker({
                   type="time"
                   id="time"
                   step="1"
-                  defaultValue={selectedDateDisplay.format("HH:mm")}
+                  value={selectedDateDisplay.format("HH:mm")}
                   className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                   onChange={(e) => {
-                    console.log(e.target.value);
+                    const [hours, minutes] = e.target.value
+                      .split(":")
+                      .map(Number);
+                    setSelectedDateTime((prev) =>
+                      prev.hour(hours).minute(minutes)
+                    );
                   }}
                 />
               </div>

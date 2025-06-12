@@ -52,14 +52,14 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={{
-        Chevron: ({ orientation }) =>
-          orientation === "left" ? (
-            <ChevronLeft className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          ),
-      }}
+      // components={{
+      //   Chevron: ({ orientation }) =>
+      //     orientation === "left" ? (
+      //       <ChevronLeft className="h-4 w-4" />
+      //     ) : (
+      //       <ChevronRight className="h-4 w-4" />
+      //     ),
+      // }}
       {...props}
     />
   );
