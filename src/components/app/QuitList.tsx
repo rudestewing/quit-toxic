@@ -10,7 +10,7 @@ export default function QuitList() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
-          <h1 className="text-4xl font-bold text-text mb-2">Quitracker</h1>
+          <h1 className="text-4xl font-bold text-text mb-2">Quit Toxic</h1>
           <p className="text-text-secondary">
             Track your journey to freedom from bad habits
           </p>

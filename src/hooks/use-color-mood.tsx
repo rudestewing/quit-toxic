@@ -60,10 +60,18 @@ const moodDescriptions = {
   },
 } as const;
 
-// Local storage keys
-const MOOD_STORAGE_KEY = "Quitracker-color-mood";
-const MOOD_SETTINGS_KEY = "Quitracker-mood-settings";
-const MOOD_ANALYTICS_KEY = "Quitracker-mood-analytics";
+// Import configuration from env
+import {
+  STORAGE_KEYS,
+  MOOD_CONFIG,
+  FEATURES,
+  EXPORT_CONFIG,
+} from "@/lib/config";
+
+// Local storage keys from environment variables
+const MOOD_STORAGE_KEY = STORAGE_KEYS.mood;
+const MOOD_SETTINGS_KEY = STORAGE_KEYS.moodSettings;
+const MOOD_ANALYTICS_KEY = STORAGE_KEYS.moodAnalytics;
 
 // Auto mood detection based on time
 function getAutoMoodByTime(): ColorMood {
@@ -94,16 +102,16 @@ interface MoodSettings {
   rememberLastMood: boolean;
 }
 
-// Default mood settings
+// Default mood settings from environment variables
 const defaultMoodSettings: MoodSettings = {
-  autoDetection: false,
+  autoDetection: FEATURES.enableMoodAutoDetection,
   preferredMoods: {
     morning: "energetic",
     day: "focused",
     evening: "cheerful",
     night: "dark",
   },
-  rememberLastMood: true,
+  rememberLastMood: FEATURES.enableRememberLastMood,
 };
 
 // Mood analytics interface
@@ -282,10 +290,8 @@ export function ColorMoodProvider({ children }: { children: React.ReactNode }) {
       if (autoMood !== currentMood) {
         setMood(autoMood, false);
       }
-    };
-
-    // Check every hour
-    const interval = setInterval(checkAutoMood, 60 * 60 * 1000);
+    }; // Check at configured interval
+    const interval = setInterval(checkAutoMood, MOOD_CONFIG.autoCheckInterval);
 
     // Check on settings change
     checkAutoMood();
@@ -450,14 +456,13 @@ export function useMoodPersistence() {
       settings,
       exportDate: new Date().toISOString(),
     };
-
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `Quitracker-mood-preferences-${
+    link.download = `${EXPORT_CONFIG.filePrefix}-${
       new Date().toISOString().split("T")[0]
     }.json`;
     document.body.appendChild(link);

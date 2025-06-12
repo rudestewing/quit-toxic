@@ -2,14 +2,14 @@
 
 ## Overview
 
-Successfully converted the Quitracker application from Next.js to Vite React TypeScript. The application maintains all core functionality while leveraging Vite's faster development experience and simpler configuration.
+Successfully converted the Quit Toxic application from Next.js to Vite React TypeScript. The application maintains all core functionality while leveraging Vite's faster development experience and simpler configuration.
 
 ## Project Structure
 
 ### New Vite Structure
 
 ```
-quitracker-vite/
+quit-toxic/
 ├── index.html                    # Main HTML entry point
 ├── package.json                  # Updated dependencies and scripts
 ├── vite.config.ts               # Vite configuration with path aliases

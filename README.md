@@ -1,6 +1,6 @@
-# Quitracker - Vite Edition
+# Quit Toxic
 
-A habit quit tracker built with React, TypeScript, and Vite. This is the Vite version of the original Next.js Quitracker application.
+A habit quit tracker built with React, TypeScript, and Vite. This is the Vite version of the original Next.js Quit Toxic application.
 
 ## Features
 
@@ -139,4 +139,62 @@ export default tseslint.config({
     ...reactDom.configs.recommended.rules,
   },
 });
+```
+
+## Environment Variables
+
+This application uses environment variables for configuration. Copy `.env.example` to `.env` and modify the values as needed.
+
+### Configuration Files
+
+- `.env` - Default environment variables for all environments
+- `.env.local` - Local overrides (not committed to git)
+- `.env.example` - Template showing all available variables
+
+### Available Variables
+
+#### Application Info
+
+- `VITE_APP_NAME` - Application name (default: "Quit Toxic")
+- `VITE_APP_VERSION` - Application version (default: "0.1.0")
+
+#### Storage Configuration
+
+- `VITE_MOOD_STORAGE_KEY` - LocalStorage key for mood preferences
+- `VITE_MOOD_SETTINGS_KEY` - LocalStorage key for mood settings
+- `VITE_MOOD_ANALYTICS_KEY` - LocalStorage key for mood analytics
+- `VITE_THEME_STORAGE_KEY` - LocalStorage key for theme preferences
+- `VITE_ZUSTAND_STORAGE_NAME` - Zustand persistence storage name
+
+#### Mood System
+
+- `VITE_AUTO_MOOD_CHECK_INTERVAL` - Auto mood detection interval in milliseconds (default: 3600000 = 1 hour)
+- `VITE_DEFAULT_MOOD` - Default mood theme (calm, energetic, focused, cheerful, dark)
+- `VITE_DEFAULT_THEME` - Default theme (light, dark, system)
+
+#### Feature Flags
+
+- `VITE_ENABLE_MOOD_AUTO_DETECTION` - Enable automatic mood detection (default: false)
+- `VITE_ENABLE_REMEMBER_LAST_MOOD` - Remember last selected mood (default: true)
+- `VITE_ENABLE_ANALYTICS` - Enable mood usage analytics (default: true)
+
+#### Export/Import
+
+- `VITE_EXPORT_FILE_PREFIX` - Prefix for exported preference files
+- `VITE_EXPORT_DATE_FORMAT` - Date format for export filenames
+
+### Setup Instructions
+
+1. Copy the environment template:
+
+```bash
+cp .env.example .env
+```
+
+2. Modify `.env` with your preferred settings
+
+3. For local development overrides, create `.env.local`:
+
+```bash
+cp .env.local.example .env.local
 ```

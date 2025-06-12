@@ -1,6 +1,8 @@
 import * as React from "react";
 import { ColorMoodProvider } from "@/hooks/use-color-mood";
 
+import { STORAGE_KEYS, MOOD_CONFIG } from "@/lib/config";
+
 export interface ThemeProviderProps {
   children: React.ReactNode;
   attribute?: "class" | "data-theme";
@@ -21,14 +23,14 @@ const ThemeContext = React.createContext<ThemeContextType | undefined>(
 export function ThemeProvider({
   children,
   attribute = "class",
-  defaultTheme = "system",
+  defaultTheme = MOOD_CONFIG.defaultTheme,
   enableSystem = true,
   disableTransitionOnChange = false,
 }: ThemeProviderProps) {
   const [theme, setTheme] = React.useState<string>(defaultTheme);
 
   React.useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || defaultTheme;
+    const savedTheme = localStorage.getItem(STORAGE_KEYS.theme) || defaultTheme;
     let resolvedTheme = savedTheme;
 
     if (enableSystem && savedTheme === "system") {
@@ -51,7 +53,8 @@ export function ThemeProvider({
     if (enableSystem) {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = () => {
-        const savedTheme = localStorage.getItem("theme") || defaultTheme;
+        const savedTheme =
+          localStorage.getItem(STORAGE_KEYS.theme) || defaultTheme;
         if (savedTheme === "system") {
           const newTheme = mediaQuery.matches ? "dark" : "light";
           setTheme(newTheme);
@@ -73,7 +76,7 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (newTheme: string) => {
-      localStorage.setItem("theme", newTheme);
+      localStorage.setItem(STORAGE_KEYS.theme, newTheme);
       let resolvedTheme = newTheme;
 
       if (enableSystem && newTheme === "system") {

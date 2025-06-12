@@ -15,7 +15,7 @@ jobs:
           echo "Commit message: $COMMIT_MSG"
           if [[ "$COMMIT_MSG" == deploy:* ]]; then
             echo "Triggering Netlify build..."
-            curl -X POST -d '{}' https://api.netlify.com/build_hooks/YOUR_BUILD_HOOK_URL
+            curl -X POST -d '{}' https://api.netlify.com/build_hooks/684935cf188f4230d0b21690
           else
             echo "No deploy keyword found. Skipping Netlify deploy."
           fi

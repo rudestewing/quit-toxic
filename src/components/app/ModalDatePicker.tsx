@@ -377,7 +377,7 @@ export default function ModalDatePicker({
 
         {/* Date & Time Selector */}
         <div className="py-6">
-          <div className="block lg:hidden">
+          <div className="block md:hidden">
             <div
               className={`grid gap-6 ${
                 includeTime ? "grid-cols-5" : "grid-cols-3"
@@ -454,21 +454,23 @@ export default function ModalDatePicker({
               )}
             </div>
           </div>
-          <div className="hidden lg:block">
-            <Calendar
-              mode="single"
-              selected={
-                selectedDateDisplay
-                  ? new Date(selectedDateDisplay.toISOString())
-                  : undefined
-              }
-              onSelect={(selected) => {
-                const val = dayjs(selected);
-                console.log({ val });
-              }}
-              className="rounded-md border shadow-sm"
-              captionLayout="dropdown"
-            />
+          <div className="hidden md:block">
+            <div className="">
+              <Calendar
+                mode="single"
+                selected={
+                  selectedDateDisplay
+                    ? new Date(selectedDateDisplay.toISOString())
+                    : undefined
+                }
+                onSelect={(selected) => {
+                  const val = dayjs(selected);
+                  console.log({ val });
+                }}
+                className="rounded-md border shadow-sm"
+                captionLayout="dropdown"
+              />
+            </div>
           </div>
           {/* Selected Date Display */}
           <div className="mt-6 p-4 bg-card/50 rounded-lg border border-border/20">

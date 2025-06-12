@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { useColorMood } from '@/hooks/use-color-mood'
-import { Settings } from 'lucide-react'
+import { useColorMood } from "@/hooks/use-color-mood";
+import { Settings } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
-import { ColorMoodSelector } from '@/components/color-mood-selector'
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { ColorMoodSelector } from "@/components/color-mood-selector";
 
 export default function AppHeader() {
-  const { currentMood } = useColorMood()
+  const { currentMood } = useColorMood();
 
   return (
     <header className="text-center mb-8" role="banner">
@@ -21,7 +21,7 @@ export default function AppHeader() {
           role="status"
           aria-live="polite"
         >
-          <h1 className="text-2xl font-bold text-text mb-2">Quitracker</h1>
+          <h1 className="text-2xl font-bold text-text mb-2">Quit Toxic</h1>
         </div>
         <div className="flex items-center gap-2">
           <Popover>
@@ -54,5 +54,5 @@ export default function AppHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -5,6 +5,8 @@ import { persist } from "zustand/middleware";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { STORAGE_KEYS } from "@/lib/config";
+
 // Extend dayjs with plugins
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
@@ -213,7 +215,7 @@ export const useQuitStore = create<QuitStore>()(
       },
     }),
     {
-      name: "quit-tracker-storage",
+      name: STORAGE_KEYS.zustandStorage,
       // Only store needed properties
       partialize: (state) => ({ items: state.items }),
     }
