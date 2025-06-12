@@ -217,16 +217,6 @@ export default tseslint.config({
 
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for additional React-specific lint rules.
 
-## 🚀 Usage
-
-### Adding a New Quit Goal
-
-1. Click the **"Add New Goal"** button
-2. Enter the habit you want to quit (e.g., "Smoking", "Social Media")
-3. Select your quit date using the date picker
-4. Choose a color mood that motivates you
-5. Click **"Add Goal"** to start tracking
-
 ### Tracking Progress
 
 - View real-time countdown timers showing days, hours, minutes, and seconds
