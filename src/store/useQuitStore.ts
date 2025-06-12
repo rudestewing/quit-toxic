@@ -209,7 +209,7 @@ export const useQuitStore = create<QuitStore>()(
           formData: {
             ...state.formData,
             benefitType: value,
-            benefitUnit: value === "time" ? "minutes" : "$",
+            benefitUnit: value === "time" ? "minutes" : "Rp",
           },
         }));
       },

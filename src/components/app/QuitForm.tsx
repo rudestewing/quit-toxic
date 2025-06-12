@@ -77,13 +77,13 @@ export default function QuitForm({ buttonType = "text" }: Props) {
           aria-label="Add a new habit to quit tracking"
         >
           <Plus className="" aria-hidden="true" />
-          {buttonType === "text" && <>Add New Quit</>}
+          {buttonType === "text" && <>Add New</>}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto bg-background border-border">
         <DialogHeader>
           <DialogTitle className="text-text">
-            {editingItem ? "Edit Quit" : "Add New Quit"}
+            {editingItem ? "Edit" : "Add New"}
           </DialogTitle>
           <DialogDescription className="text-text-secondary">
             {editingItem
@@ -203,8 +203,8 @@ export default function QuitForm({ buttonType = "text" }: Props) {
                             <SelectValue placeholder="Select currency" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="$">USD ($)</SelectItem>
                             <SelectItem value="Rp">IDR (Rp)</SelectItem>
+                            <SelectItem value="$">USD ($)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
